@@ -4,6 +4,8 @@
 // Закомитьте изменения и отправьте их в свой репозиторий.
 #include <iostream>
 
+using namespace std;
+
 int main() {
     int count_of_three = 0;
     for(int i = 1; i <= 1000; ++i) {
