@@ -138,7 +138,7 @@ private:
             if (word_to_document_freqs_.count(stop_word_p) > 0) {
                 for (auto& [id, relevance] : word_to_document_freqs_.at(stop_word_p)) {
 
-                    document_to_relevance[id] += (relevance * ((double)log((count_of_document_ * 1.0) / (word_to_document_freqs_.at(stop_word_p).size()))));
+                    document_to_relevance[id] += (relevance * (log((count_of_document_ * 1.0) / (word_to_document_freqs_.at(stop_word_p).size()))));
                 }
             }
         }
