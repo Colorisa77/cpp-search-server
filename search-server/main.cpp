@@ -62,15 +62,12 @@ public:
 
         vector<string> words = SplitIntoWordsNoStop(document);
 
-        if (words.empty()) return;
+        if (words.empty()) {
+            return;
+        }
 
         for (const string& word : words) {
-            if (!word_to_document_freqs_.count(word)) {
-                word_to_document_freqs_[word].insert({ document_id, 1.0 / words.size() });
-            }
-            else {
-                word_to_document_freqs_.at(word)[document_id] += 1.0 / words.size();
-            }
+            word_to_document_freqs_[word][document_id] += (1.0 / words.size());
         }
     }
 
@@ -138,17 +135,17 @@ private:
 
         if (query_words.plus.empty()) return matched_documents;
         for (const string& stop_word_p : query_words.plus) {
-            if (word_to_document_freqs_.count(stop_word_p)) {
+            if (word_to_document_freqs_.count(stop_word_p) > 0) {
                 for (auto& [id, relevance] : word_to_document_freqs_.at(stop_word_p)) {
 
-                    document_to_relevance[id] += (relevance * ((double)log((double)count_of_document_ / (double)(word_to_document_freqs_.at(stop_word_p).size()))));
+                    document_to_relevance[id] += (relevance * ((double)log((count_of_document_ * 1.0) / (word_to_document_freqs_.at(stop_word_p).size()))));
                 }
             }
         }
 
         if (!query_words.minus.empty()) {
             for (const string& stop_word_m : query_words.minus) {
-                if (word_to_document_freqs_.count(stop_word_m))
+                if (word_to_document_freqs_.count(stop_word_m) > 0)
                     for (auto& [id, relevance] : word_to_document_freqs_.at(stop_word_m)) {
                         document_to_relevance.erase(id);
                     }
