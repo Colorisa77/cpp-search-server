@@ -129,6 +129,10 @@ private:
         return query_words;
     }
 
+    double CountRelevance(const double& relevance, const string& stop_w) const {
+        return (relevance * (log((count_of_document_ * 1.0) / (word_to_document_freqs_.at(stop_w).size()))));
+    }
+
     vector<Document> FindAllDocuments(const Query& query_words) const {
         vector<Document> matched_documents;
         map<int, double> document_to_relevance;
@@ -137,8 +141,7 @@ private:
         for (const string& stop_word_p : query_words.plus) {
             if (word_to_document_freqs_.count(stop_word_p) > 0) {
                 for (auto& [id, relevance] : word_to_document_freqs_.at(stop_word_p)) {
-
-                    document_to_relevance[id] += (relevance * (log((count_of_document_ * 1.0) / (word_to_document_freqs_.at(stop_word_p).size()))));
+                    document_to_relevance[id] += CountRelevance(relevance, stop_word_p);
                 }
             }
         }
