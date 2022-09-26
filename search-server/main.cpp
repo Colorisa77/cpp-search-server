@@ -312,6 +312,7 @@ void TestAddingDocuments() {
     const vector<int> rating = { 15, 10, 14 };
     {
         SearchServer server;
+        ASSERT_EQUAL(server.GetDocumentCount(), 0);
         server.AddDocument(doc_id, content, DocumentStatus::ACTUAL, rating);
         auto testing = server.FindTopDocuments(content);
         ASSERT_EQUAL(testing[0].id, doc_id);
@@ -319,7 +320,7 @@ void TestAddingDocuments() {
     }
 }
 
-void TestMinusWords() {
+void TestSearchingDocumentsWithMinusWords() {
     const int first_doc_id = 5;
     const string first_content = "red tomato in the bubble"s;
     const vector<int> first_rating = { 15, 10, 14 };
@@ -345,16 +346,23 @@ void TestMatchingWords() {
     {
         SearchServer server;
         server.AddDocument(doc_id, content, DocumentStatus::ACTUAL, rating);
+        vector<string> expected_matched_words = { "red", "tomato" };
+        DocumentStatus expected_status = DocumentStatus::ACTUAL;
         vector<string> matched_words;
         DocumentStatus status;
         tie(matched_words, status) = server.MatchDocument("red tomato", doc_id);
+        ASSERT(expected_matched_words == matched_words);
+        ASSERT(expected_status == status);
         ASSERT_EQUAL(matched_words.size(), 2);
         tie(matched_words, status) = server.MatchDocument("red bubble -tomato", doc_id);
+        expected_matched_words.clear();
+        ASSERT(expected_matched_words == matched_words);
+        ASSERT(expected_status == status);
         ASSERT_EQUAL(matched_words.size(), 0);
     }
 }
 
-void TestDocumentRelevationSort() {
+void TestSortDocumentByRelevation() {
     const int first_doc_id = 5;
     const string first_content = "red tomato in the bubble"s;
     const vector<int> first_rating = { 15, 10, 14 };
@@ -381,21 +389,20 @@ void TestDocumentRelevationSort() {
     }
 }
 
-void TestDocumentRating() {
+void TestCountingCorrectDocumentRating() {
     const int doc_id = 28;
     const string content = "cat eating tomato"s;
     const vector<int> rating = { 2, 4, 8 };
-    int rating_sum = 14;
-    double doc_rating = rating_sum / static_cast<int>(rating.size());
+    const double correct_document_rating = (2 + 4 + 8) / 3;
     {
         SearchServer server;
         server.AddDocument(doc_id, content, DocumentStatus::ACTUAL, rating);
         auto found_doc = server.FindTopDocuments("cat"s);
-        ASSERT(found_doc[0].rating == doc_rating);
+        ASSERT(found_doc[0].rating == correct_document_rating);
     }
 }
 
-void TestByDocumentPredicateFilter() {
+void TestSearchingDocumentsByDocumentStatus() {
     const int first_doc_id = 5;
     const string first_content = "red tomato in the bubble"s;
     const vector<int> first_rating = { 15, 10, 14 };
@@ -427,7 +434,42 @@ void TestByDocumentPredicateFilter() {
     }
 }
 
-void TestCorrectDocumentRelevation() {
+void TestSearchingDocumentsByPredicateFilter() {
+    const int first_doc_id = 5;
+    const string first_content = "red tomato in the bubble"s;
+    const vector<int> first_rating = { 15, 10, 14 };
+
+    const int second_doc_id = 14;
+    const string second_content = "blue tomato outside of the bucket"s;
+    const vector<int> second_rating = { 5, 12, 11 };
+
+    const int third_doc_id = 28;
+    const string third_content = "cat eating tomato"s;
+    const vector<int> third_rating = { 2, 4, 8 };
+    {
+        SearchServer server;
+        server.AddDocument(first_doc_id, first_content, DocumentStatus::ACTUAL, first_rating);
+        server.AddDocument(second_doc_id, second_content, DocumentStatus::IRRELEVANT, second_rating);
+        server.AddDocument(third_doc_id, third_content, DocumentStatus::REMOVED, third_rating);
+
+        auto found_doc = server.FindTopDocuments("tomato", [](int document_id, DocumentStatus status, int rating) { return status == DocumentStatus::ACTUAL; });
+        ASSERT_EQUAL(found_doc.size(), 1);
+        ASSERT_EQUAL(found_doc[0].id, first_doc_id);
+
+        const int expected_document_id = 14;
+        found_doc = server.FindTopDocuments("tomato", [](int document_id, DocumentStatus status, int rating) { return document_id == expected_document_id; });
+        ASSERT_EQUAL(found_doc.size(), 1);
+        ASSERT_EQUAL(found_doc[0].id, second_doc_id);
+
+        const int expected_document_rating = (2 + 4 + 8) / 3;
+        found_doc = server.FindTopDocuments("tomato", [](int document_id, DocumentStatus status, int rating) { return rating == expected_document_rating; });
+        ASSERT_EQUAL(found_doc.size(), 1);
+        ASSERT_EQUAL(found_doc[0].id, third_doc_id);
+    }
+}
+
+
+void TestCountingCorrectDocumentRelevation() {
     SearchServer server;
     server.AddDocument(22, "house cristall and gold"s, DocumentStatus::ACTUAL, { 1,2,3 });
     server.AddDocument(23, "car green sky house"s, DocumentStatus::ACTUAL, { 1,2,3 });
@@ -447,12 +489,13 @@ void TestCorrectDocumentRelevation() {
 void TestSearchServer() {
     RUN_TEST(TestExcludeStopWordsFromAddedDocumentContent);
     RUN_TEST(TestAddingDocuments);
-    RUN_TEST(TestMinusWords);
+    RUN_TEST(TestSearchingDocumentsWithMinusWords);
     RUN_TEST(TestMatchingWords);
-    RUN_TEST(TestDocumentRelevationSort);
-    RUN_TEST(TestDocumentRating);
-    RUN_TEST(TestByDocumentPredicateFilter);
-    RUN_TEST(TestCorrectDocumentRelevation);
+    RUN_TEST(TestSortDocumentByRelevation);
+    RUN_TEST(TestCountingCorrectDocumentRating);
+    RUN_TEST(TestSearchingDocumentsByDocumentStatus);
+    RUN_TEST(TestSearchingDocumentsByPredicateFilter);
+    RUN_TEST(TestCountingCorrectDocumentRelevation);
 }
 
 // --------- Окончание модульных тестов поисковой системы -----------
