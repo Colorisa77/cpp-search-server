@@ -6,7 +6,6 @@
 #include <string>
 #include <utility>
 #include <vector>
-#include <optional>
 #include <numeric>
 
 using namespace std;
