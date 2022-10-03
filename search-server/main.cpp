@@ -230,7 +230,7 @@ private:
         if (text[0] == '-') {
             is_minus = true;
             text = text.substr(1);
-            if(text[0] == '-' || text.empty()) {
+            if (text[0] == '-' || text.empty()) {
                 throw invalid_argument("empty or incorrect minus word");
             }
         }
