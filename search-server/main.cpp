@@ -104,6 +104,8 @@ public:
             word_to_document_freqs_[word][document_id] += inv_word_count;
         }
         documents_.emplace(document_id, DocumentData{ ComputeAverageRating(ratings), status });
+        sorted_document_id_.push_back(document_id);
+        sort(sorted_document_id_.begin(), sorted_document_id_.end());
     }
 
     template <typename DocumentPredicate>
@@ -141,15 +143,7 @@ public:
             throw out_of_range("SearchServer::GetDocumentId, out of range");
         }
         else {
-            int counter = 0;
-            int result = 0;
-            for (const auto& [id, _] : documents_) {
-                if (counter == index) {
-                    result = id;
-                    return result;
-                }
-                ++counter;
-            }
+            return sorted_document_id_.at(index);
         }
         throw out_of_range("SearchServer::GetDocumentId, out of range");
     }
@@ -186,6 +180,7 @@ private:
     const set<string> stop_words_;
     map<string, map<int, double>> word_to_document_freqs_;
     map<int, DocumentData> documents_;
+    vector<int> sorted_document_id_;
 
     bool IsStopWord(const string& word) const {
         return stop_words_.count(word) > 0;
@@ -245,9 +240,9 @@ private:
     Query ParseQuery(const string& text) const {
         Query query;
         for (const string& word : SplitIntoWords(text)) {
-            if (!IsValidWord(word)) { 
-                throw invalid_argument("invalid character(s)"); 
-            } 
+            if (!IsValidWord(word)) {
+                throw invalid_argument("invalid character(s)");
+            }
             const QueryWord query_word = ParseQueryWord(word);
             if (!query_word.is_stop) {
                 if (query_word.is_minus) {
