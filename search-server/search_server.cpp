@@ -9,7 +9,6 @@ std::vector<int>::const_iterator SearchServer::end() const {
 }
 
 void SearchServer::AddDocument(int document_id, const std::string& document, DocumentStatus status, const std::vector<int>& ratings) {
-    LOG_DURATION("Add_document");
     if (document_id < 0 || (documents_.count(document_id) > 0)) {
         throw std::invalid_argument("SearchServer::AddDocument, invalid document id");
     }
@@ -86,8 +85,7 @@ SearchServer::Query SearchServer::ParseQuery(const std::string& text) const {
         if (!query_word.is_stop) {
             if (query_word.is_minus) {
                 query.minus_words.insert(query_word.data);
-            }
-            else {
+            } else {
                 query.plus_words.insert(query_word.data);
             }
         }

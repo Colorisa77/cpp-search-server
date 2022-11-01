@@ -6,7 +6,7 @@
 #include "remove_duplicates.h"
 #include "paginator.h"
 
-using namespace std::literals;
+using namespace std;
 
 int main() {
     SearchServer search_server("and in at"s);
