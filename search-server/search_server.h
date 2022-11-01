@@ -9,6 +9,7 @@
 
 #include "string_processing.h"
 #include "document.h"
+#include "log_duration.h"
 
 const int MAX_RESULT_DOCUMENT_COUNT = 5;
 const double EPSILON = 1e-6;
@@ -35,9 +36,15 @@ public:
 
     int GetDocumentCount() const;
 
-    int GetDocumentId(int index);
+    std::vector<int>::const_iterator begin() const;
+
+    std::vector<int>::const_iterator end() const;
 
     std::tuple<std::vector<std::string>, DocumentStatus> MatchDocument(const std::string& raw_query, int document_id) const;
+
+    const std::map<std::string, double>& GetWordFrequencies(int document_id) const;
+
+    void RemoveDocument(int document_id);
 
 private:
     struct DocumentData {
@@ -46,15 +53,17 @@ private:
     };
     const std::set<std::string> stop_words_;
     std::map<std::string, std::map<int, double>> word_to_document_freqs_;
+    std::map<int, std::map<std::string, double>> word_to_document_freqs_by_id_;
     std::map<int, DocumentData> documents_;
     std::vector<int> sorted_document_id_;
+    std::map<std::string, double> empty_map_;
 
     bool IsStopWord(const std::string& word) const;
 
     static bool IsValidWord(const std::string& word) {
         return std::none_of(word.begin(), word.end(), [](char c) {
             return c >= '\0' && c < ' ';
-        });
+            });
     }
 
     std::vector<std::string> SplitIntoWordsNoStop(const std::string& text) const;
