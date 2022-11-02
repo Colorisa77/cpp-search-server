@@ -29,16 +29,13 @@ public:
 
     template <typename DocumentPredicate>
     std::vector<Document> FindTopDocuments(const std::string& raw_query, DocumentPredicate document_predicate) const;
-
     std::vector<Document> FindTopDocuments(const std::string& raw_query, DocumentStatus filter_status) const;
-
     std::vector<Document> FindTopDocuments(const std::string& raw_query) const;
 
     int GetDocumentCount() const;
 
-    std::vector<int>::const_iterator begin() const;
-
-    std::vector<int>::const_iterator end() const;
+    std::set<int>::const_iterator begin() const;
+    std::set<int>::const_iterator end() const;
 
     std::tuple<std::vector<std::string>, DocumentStatus> MatchDocument(const std::string& raw_query, int document_id) const;
 
@@ -51,12 +48,12 @@ private:
         int rating;
         DocumentStatus status;
     };
+
     const std::set<std::string> stop_words_;
     std::map<std::string, std::map<int, double>> word_to_document_freqs_;
     std::map<int, std::map<std::string, double>> word_to_document_freqs_by_id_;
     std::map<int, DocumentData> documents_;
-    std::vector<int> sorted_document_id_;
-    std::map<std::string, double> empty_map_;
+    std::set<int> sorted_document_id_;
 
     bool IsStopWord(const std::string& word) const;
 

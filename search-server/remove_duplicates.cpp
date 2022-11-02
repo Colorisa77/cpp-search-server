@@ -5,13 +5,12 @@ void RemoveDuplicates(SearchServer& search_server) {
 	std::set<std::vector<std::string>> matched_words;
 	for (int document_id : search_server) {
 		std::vector<std::string> words_in_doc;
-		for (auto& [words, _] : search_server.GetWordFrequencies(document_id)) {
+		for (const auto& [words, _] : search_server.GetWordFrequencies(document_id)) {
 			words_in_doc.push_back(words);
 		}
 		if (matched_words.count(words_in_doc) > 0) {
 			duplicates.insert(document_id);
-		}
-		else {
+		} else {
 			matched_words.insert(words_in_doc);
 		}
 	}

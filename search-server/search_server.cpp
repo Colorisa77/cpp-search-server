@@ -1,10 +1,10 @@
 #include "search_server.h"
 
-std::vector<int>::const_iterator SearchServer::begin() const {
+std::set<int>::const_iterator SearchServer::begin() const {
     return sorted_document_id_.begin();
 }
 
-std::vector<int>::const_iterator SearchServer::end() const {
+std::set<int>::const_iterator SearchServer::end() const {
     return sorted_document_id_.end();
 }
 
@@ -19,15 +19,16 @@ void SearchServer::AddDocument(int document_id, const std::string& document, Doc
         word_to_document_freqs_by_id_[document_id][word] += inv_word_count;
     }
     documents_.emplace(document_id, DocumentData{ ComputeAverageRating(ratings), status });
-    sorted_document_id_.push_back(document_id);
-    std::sort(sorted_document_id_.begin(), sorted_document_id_.end());
+    sorted_document_id_.insert(document_id);
 }
 
 std::vector<Document> SearchServer::FindTopDocuments(const std::string& raw_query, DocumentStatus filter_status) const {
     return FindTopDocuments(raw_query, [filter_status](int document_id, DocumentStatus status, int rating) { return status == filter_status; });
 }
 
-std::vector<Document> SearchServer::FindTopDocuments(const std::string& raw_query) const { return SearchServer::FindTopDocuments(raw_query, DocumentStatus::ACTUAL); }
+std::vector<Document> SearchServer::FindTopDocuments(const std::string& raw_query) const { 
+    return SearchServer::FindTopDocuments(raw_query, DocumentStatus::ACTUAL); 
+}
 
 int SearchServer::GetDocumentCount() const {
     return documents_.size();
@@ -114,7 +115,8 @@ const std::map<std::string, double>& SearchServer::GetWordFrequencies(int docume
     if (word_to_document_freqs_by_id_.count(document_id) > 0) {
         return word_to_document_freqs_by_id_.at(document_id);
     }
-    return empty_map_;
+    static const std::map<std::string, double> empty_map;
+    return empty_map;
 }
 
 void SearchServer::RemoveDocument(int document_id) {
@@ -122,7 +124,7 @@ void SearchServer::RemoveDocument(int document_id) {
         return;
     }
     documents_.erase(document_id);
-    sorted_document_id_.erase(std::find(sorted_document_id_.begin(), sorted_document_id_.end(), document_id));
+    sorted_document_id_.erase(document_id);
     auto word_freq = GetWordFrequencies(document_id);
     if (word_freq.empty()) {
         return;
