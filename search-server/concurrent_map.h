@@ -20,25 +20,23 @@ public:
         Value& ref_to_value;
     };
 
-    constexpr ConcurrentMap(size_t bucket_count) : size_(bucket_count), v_lock_(size_), mp_(size_) {}
+    constexpr ConcurrentMap(size_t bucket_count) : mp_(bucket_count) {}
 
     Access operator[](const Key& key) {
-        uint64_t k = key % size_;
-        return { std::lock_guard(v_lock_[k]), mp_[k][key] };
+        uint64_t k = key % mp_.size();
+        return { std::lock_guard(mp_[k].first), mp_[k].second[key]};
     }
 
     std::map<Key, Value> BuildOrdinaryMap() {
         std::map<Key, Value> result;
-        for (size_t i = 0; i < size_; ++i) {
-            v_lock_[i].lock();
-            result.insert(mp_[i].begin(), mp_[i].end());
-            v_lock_[i].unlock();
+        for (size_t i = 0; i < mp_.size(); ++i) {
+            mp_[i].first.lock();
+            result.insert(mp_[i].second.begin(), mp_[i].second.end());
+            mp_[i].first.unlock();
         }
         return result;
     }
 
 private:
-    size_t size_;
-    std::vector<std::mutex> v_lock_;
-    std::vector<std::map<Key, Value>> mp_;
+    std::vector<std::pair<std::mutex, std::map<Key, Value>>> mp_;
 };
