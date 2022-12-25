@@ -24,19 +24,23 @@ public:
 
     Access operator[](const Key& key) {
         uint64_t k = key % mp_.size();
-        return { std::lock_guard(mp_[k].first), mp_[k].second[key]};
+        return { std::lock_guard(mp_[k].mutex), mp_[k].data[key] };
     }
 
     std::map<Key, Value> BuildOrdinaryMap() {
         std::map<Key, Value> result;
         for (size_t i = 0; i < mp_.size(); ++i) {
-            mp_[i].first.lock();
-            result.insert(mp_[i].second.begin(), mp_[i].second.end());
-            mp_[i].first.unlock();
+            mp_[i].mutex.lock();
+            result.insert(mp_[i].data.begin(), mp_[i].data.end());
+            mp_[i].mutex.unlock();
         }
         return result;
     }
 
 private:
-    std::vector<std::pair<std::mutex, std::map<Key, Value>>> mp_;
+    struct Bucket {
+        std::mutex mutex;
+        std::map<Key, Value> data;
+    };
+    std::vector<Bucket> mp_;
 };
