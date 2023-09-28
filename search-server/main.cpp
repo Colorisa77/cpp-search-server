@@ -1,5 +1,4 @@
 #include "request_queue.h"
-//#include "remove_duplicates.h"
 #include "process_queries.h"
 #include <iostream>
 #include <string>

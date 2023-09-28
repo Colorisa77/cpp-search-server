@@ -22,13 +22,11 @@ class SearchServer {
 public:
 
     explicit SearchServer(const std::string_view stop_words_text)
-        : SearchServer(SplitIntoWords(stop_words_text))  // Invoke delegating constructor from string container
-    {
+        : SearchServer(SplitIntoWords(stop_words_text)) {
     }
 
     explicit SearchServer(const std::string& stop_words_text)
-        : SearchServer(SplitIntoWords(stop_words_text))  // Invoke delegating constructor from string container
-    {
+        : SearchServer(SplitIntoWords(stop_words_text)) {
     }
 
     template <typename StringContainer>
@@ -118,7 +116,6 @@ private:
 
     Query ParseQuery(const std::string_view text) const;
 
-    // Existence required
     double ComputeWordInverseDocumentFreq(const std::string_view word) const;
 
     template <typename DocumentPredicate>

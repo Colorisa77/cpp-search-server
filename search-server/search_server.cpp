@@ -97,7 +97,6 @@ bool SearchServer::IsStopWord(const std::string_view word) const {
 
 SearchServer::QueryWord SearchServer::ParseQueryWord(std::string_view text) const {
     bool is_minus = false;
-    // Word shouldn't be empty
     if (text[0] == '-') {
         is_minus = true;
         text = text.substr(1);

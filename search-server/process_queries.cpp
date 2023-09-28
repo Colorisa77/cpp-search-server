@@ -19,7 +19,6 @@ std::vector<Document> ProcessQueriesJoined(const SearchServer& search_server, co
 	}
 	std::vector<Document> result;
 	result.reserve(count_size_v);
-	//std::cout << count_size_v << std::endl;
 	for (auto it = temp.begin(), end = temp.end(); it != end; ++it) {
 		result.insert(result.end(), it->begin(), it->end());
 	}
